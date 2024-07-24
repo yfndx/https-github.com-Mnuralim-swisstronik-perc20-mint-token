@@ -1,82 +1,109 @@
-# Swisstronik Tesnet Techinal Task 4 (Mint a PERC20 Token)
 
-link : [Click!](https://www.swisstronik.com/testnet2/dashboard)
+# Swisstronik PERC20 Mint Token
 
-Feel free donate to my EVM address
+## Overview
 
-EVM :
+This repository contains a Hardhat project for deploying and managing a mintable ERC20 token on the Ethereum network. Below is an explanation of the key components and how to deploy the contract.
 
-```bash
-0x9902C3A98Df4b240ad5496cC26F89bAb8058f4aE
+## Explanation of Code
+
+### Solidity Contract
+
+#### `contracts/SwisstronikERC20.sol`
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract SwisstronikERC20 is ERC20, Ownable {
+    constructor() ERC20("Swisstronik Token", "SWT") {}
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
+    }
+}
 ```
 
-## Steps
+- **ERC20 Token**: The contract inherits from OpenZeppelin's ERC20 contract.
+- **Ownable**: The contract inherits from OpenZeppelin's Ownable contract, which restricts the `mint` function to the contract owner.
+- **`mint` function**: Allows the owner to mint new tokens to a specified address.
 
-### 1. Clone Repository
+### Deployment Script
 
-```bash
-git clone https://github.com/Mnuralim/swisstronik-perc20-mint-token.git
+#### `scripts/deploy.js`
+
+```javascript
+async function main() {
+    const [deployer] = await ethers.getSigners();
+    console.log("Deploying contracts with the account:", deployer.address);
+
+    const SwisstronikERC20 = await ethers.getContractFactory("SwisstronikERC20");
+    const token = await SwisstronikERC20.deploy();
+    console.log("SwisstronikERC20 deployed to:", token.address);
+}
+
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
 ```
 
+- **`main` function**: Deploys the `SwisstronikERC20` contract.
+- **`ethers.getSigners`**: Retrieves the deployer's account.
+- **`ethers.getContractFactory`**: Prepares the contract for deployment.
+- **`SwisstronikERC20.deploy`**: Deploys the contract to the specified network.
+
+## Deploying the Contract
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+- [Node.js](https://nodejs.org/)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+
+### Steps
+
+1. **Install dependencies**:
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
+
+2. **Compile the contract**:
+    ```bash
+    npx hardhat compile
+    ```
+
+3. **Deploy the contract**:
+    ```bash
+    npx hardhat run scripts/deploy.js --network <network-name>
+    ```
+    Replace `<network-name>` with the desired network, such as `localhost`, `ropsten`, or `mainnet`.
+
+### Example Configuration in `hardhat.config.js`
+
+```javascript
+require("@nomiclabs/hardhat-waffle");
+
+module.exports = {
+    solidity: "0.8.4",
+    networks: {
+        localhost: {
+            url: "http://127.0.0.1:8545"
+        },
+        ropsten: {
+            url: `https://ropsten.infura.io/v3/YOUR_INFURA_PROJECT_ID`,
+            accounts: [`0x${YOUR_PRIVATE_KEY}`]
+        }
+    }
+};
 ```
-cd swisstronik-perc20-mint-token
-```
 
-### 2. Install Dependency
-
-```bash
-npm install
-```
-
-### 3. Set .env File
-
-create .env file in root project
-
-```bash
-PRIVATE_KEY="your private key"
-```
-
-### 4. Update Smart Contract (Skipp if you won't modify Token name)
-
-- Open contracts folder
-- Open PERC20Sample.sol file
-- Feel free to modify token name and token symbol
-
-### 5. Compile Smart Contract
-
-```bash
-npm run compile
-```
-
-### 6. Deploy Smart Contract
-
-```bash
-npm run deploy
-```
-
-### 7. Mint Token
-
-```bash
-npm run mint
-```
-
-### 8. Transfer Token
-
-```bash
-npm run transfer
-```
-
-### 8. Finsihed
-
-- Open the deployed-adddress.ts (location in utils folder)
-- Copy the address and paste the address into testnet dashboard
-- Open the tx-hash.txt (location in utils folder)
-- Copy the address and paste the tx hash link into testnet dashboard
-- push this project to your github and paste your repository link in testnet dashboard
-
-by :
-github : [Mnuralim](https://github.com/Mnuralim)
-twitter : @Izzycracker04
-telegram : @fitriay19
-
-0xCd825ae0335190f4c8882DF16FB0577d478b3898
+Replace `YOUR_INFURA_PROJECT_ID` with your Infura project ID and `YOUR_PRIVATE_KEY` with your Ethereum account private key.
